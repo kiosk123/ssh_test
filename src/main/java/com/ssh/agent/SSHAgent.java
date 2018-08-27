@@ -125,29 +125,9 @@ public class SSHAgent implements Logger {
            exec.setCommand("echo AAA");
            exec.connect();
            
-           ByteArrayOutputStream baos = new ByteArrayOutputStream();
-           ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
-           in = exec.getInputStream();
-           err = exec.getErrStream();
+           ByteArrayOutputStream baos = getResult(exec.getInputStream());
+           ByteArrayOutputStream errBaos = getResult(exec.getErrStream());
            
-           byte[] buffer = new byte[1024];
-           byte[] errBuffer = new byte[1024];
-           
-           while(true) {
-               int len = in.read(buffer);
-               if (len < 0) {
-                   break;
-               }
-               baos.write(buffer, 0, len);
-           }
-           
-           while(true) {
-               int len = err.read(errBuffer);
-               if (len < 0) {
-                   break;
-               }
-               errBaos.write(errBuffer, 0, len);
-           }
            System.out.println("Command result");
            System.out.println("STD OUT : " + new String(baos.toByteArray()));
            System.out.println("STD ERR : " + new String(errBaos.toByteArray()));
@@ -170,6 +150,21 @@ public class SSHAgent implements Logger {
                session.disconnect();
            }
        }
+   }
+   
+   private ByteArrayOutputStream getResult(InputStream in) throws IOException {
+       ByteArrayOutputStream baos = new ByteArrayOutputStream();
+       byte[] buffer = new byte[1024];
+       
+       while(true) {
+           int len = in.read(buffer);
+           if (len < 0) {
+               break;
+           }
+           baos.write(buffer, 0, len);
+       }
+       
+       return baos;
    }
    
    public static void main(String[] args) {
